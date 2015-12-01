@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	// "reflect"
 	"strconv"
 	"time"
 )
@@ -16,6 +15,42 @@ import (
 type StatsdJson []struct {
 	Datapoints [][]interface{} `json:"datapoints"`
 	Target     string          `json:"target"`
+}
+
+func main() {
+	if SetViper() {
+		for {
+			Looper()
+			time.Sleep(10 * time.Second)
+		}
+	}
+}
+
+func SetViper() bool {
+	viper.SetConfigName("dev")
+	viper.AddConfigPath("config")
+	err := viper.ReadInConfig()
+	if err != nil {
+		fmt.Println("cannot set viper")
+		return false
+	}
+	return true
+}
+
+func Looper() {
+	start := time.Now()
+	codes := []int{200, 401, 404, 500, 503}
+	env := []string{"prod1", "prod2"}
+	counter := make(chan Counter)
+	for _, code := range codes {
+		go curlStatsD(code, counter, env)
+	}
+	for range codes {
+		counter_back := <-counter
+		fmt.Printf("%.2fs: %v - %v\n", counter_back.RespTime, counter_back.ResponseCode, counter_back.Count)
+	}
+	fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
+	fmt.Printf("---------------------\n")
 }
 
 func curlStatsD(resp_code int, counter_chan chan Counter, envs []string) {
@@ -70,7 +105,6 @@ func curlStatsD(resp_code int, counter_chan chan Counter, envs []string) {
 			env_count += counter
 		}
 	}
-
 	counter_chan <- Counter{resp_code, env_count, time.Since(start).Seconds()}
 }
 
@@ -78,59 +112,4 @@ type Counter struct {
 	ResponseCode int
 	Count        int
 	RespTime     float64
-}
-
-func CheckAllPresentAndAccountedFor(codes []int, holdAll []Counter) bool {
-	if len(holdAll) != 5 {
-		return false
-	} else {
-		checkr := false
-		for _, code := range codes {
-			for _, hold := range holdAll {
-				if hold.ResponseCode == code {
-					checkr = true
-				}
-			}
-			if checkr {
-				return true
-			} else {
-				return false
-			}
-		}
-	}
-	return false
-}
-
-func Looper() {
-	start := time.Now()
-	codes := []int{200, 401, 404, 500, 503}
-	env := []string{"prod1", "prod2"}
-	counter := make(chan Counter)
-	for _, code := range codes {
-		go curlStatsD(code, counter, env)
-	}
-	for range codes {
-		counter_back := <-counter
-		fmt.Printf("%.2fs: %v - %v\n", counter_back.RespTime, counter_back.ResponseCode, counter_back.Count)
-	}
-	fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
-	fmt.Printf("---------------------\n")
-}
-func SetViper() bool {
-	viper.SetConfigName("dev")
-	viper.AddConfigPath("config")
-	err := viper.ReadInConfig()
-	if err != nil { // Handle errors reading the config file
-		fmt.Println("cannot set viper")
-		return false
-	}
-	return true
-}
-func main() {
-	if SetViper() {
-		for {
-			Looper()
-			time.Sleep(10 * time.Second)
-		}
-	}
 }
