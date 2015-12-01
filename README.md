@@ -1,7 +1,7 @@
-Apps API Messagin Board Relay
+Apps API Messaging Board Relay (AAMBR)
 ===============
 
-##Introduction
+## Introduction
 
 Takes data from Graphite and summerizes it. This summerized data will eventually be used as part of a Raspberry Pi LCD project. The Graphite data originates from the Apps API. At the moment this repo only deals with response codes but it would be simple to extent this to other data sets such as CPU usage, Memory, Average responce times etc.
 
