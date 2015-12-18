@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/hybridgroup/gobot"
+	// "github.com/hybridgroup/gobot/platforms/firmata"
+	"github.com/hybridgroup/gobot/platforms/gpio"
+	"github.com/hybridgroup/gobot/platforms/raspi"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
@@ -20,8 +24,29 @@ type StatsdJson []struct {
 func main() {
 	if SetViper() {
 		for {
-			Looper()
-			time.Sleep(10 * time.Second)
+			gbot := gobot.NewGobot()
+
+			r := raspi.NewRaspiAdaptor("raspi")
+			led := gpio.NewLedDriver(r, "led", "7")
+
+			work := func() {
+				gobot.Every(1*time.Second, func() {
+					led.Toggle()
+				})
+			}
+
+			robot := gobot.NewRobot("blinkBot",
+				[]gobot.Connection{r},
+				[]gobot.Device{led},
+				work,
+			)
+
+			gbot.AddRobot(robot)
+
+			gbot.Start()
+
+			// Looper()
+			// time.Sleep(10 * time.Second)
 		}
 	}
 }
