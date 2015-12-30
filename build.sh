@@ -4,4 +4,4 @@ export GO15VENDOREXPERIMENT="1";
 #export GOPATH="/d1/gopath";
 export GOPATH="$HOME/gopath";
 
-go build .
+env GOARM=6 GOARCH=arm GOOS=linux go build .

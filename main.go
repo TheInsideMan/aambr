@@ -23,31 +23,42 @@ type StatsdJson []struct {
 
 func main() {
 	if SetViper() {
-		for {
-			gbot := gobot.NewGobot()
+		// for {
+		gbot := gobot.NewGobot()
 
-			r := raspi.NewRaspiAdaptor("raspi")
-			led := gpio.NewLedDriver(r, "led", "7")
+		r := raspi.NewRaspiAdaptor("raspi")
+		led := gpio.NewLedDriver(r, "led", "12")
 
-			work := func() {
-				gobot.Every(1*time.Second, func() {
-					led.Toggle()
-				})
+		work := func() {
+			// gobot.Every(1*time.Second, func() {
+			// 	err := led.Off()
+			// 	if err != nil {
+			// 		fmt.Println(err.Error())
+			// 	}
+			// 	time.Sleep(900 * time.Millisecond)
+			// 	led.On()
+			// })
+			for {
+				led.On()
+				time.Sleep(100 * time.Millisecond)
+				led.Off()
+				time.Sleep(900 * time.Millisecond)
 			}
-
-			robot := gobot.NewRobot("blinkBot",
-				[]gobot.Connection{r},
-				[]gobot.Device{led},
-				work,
-			)
-
-			gbot.AddRobot(robot)
-
-			gbot.Start()
-
-			// Looper()
-			// time.Sleep(10 * time.Second)
 		}
+
+		robot := gobot.NewRobot("blinkBot",
+			[]gobot.Connection{r},
+			[]gobot.Device{led},
+			work,
+		)
+
+		gbot.AddRobot(robot)
+
+		gbot.Start()
+
+		// Looper()
+		// time.Sleep(10 * time.Second)
+		// }
 	}
 }
 
