@@ -1,7 +1,11 @@
 # Grovepi + grove RGB LCD module
  
 # Example for using the Grove I2C color LCD
+<<<<<<< HEAD
 from python import *
+=======
+from grove_rgb_lcd import *
+>>>>>>> 61c92585407de841c98b44cf5b06f191d165fbb4
 
 while(True):
     setText("Hello world\nLCD test")

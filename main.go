@@ -83,6 +83,7 @@ func SetViper() bool {
 }
 
 func Looper() {
+
 	start := time.Now()
 	codes := []int{200, 401, 404, 500, 503}
 	env := []string{"prod1", "prod2"}
@@ -93,6 +94,7 @@ func Looper() {
 	rgb = "green"
 	lcd_message = ""
 	m := make(map[int]string)
+
 	for range codes {
 		counter_back := <-counter
 		fmt.Printf("%.2fs: %v - %v\n", counter_back.RespTime, counter_back.ResponseCode, counter_back.Count)
@@ -170,6 +172,17 @@ func curlStatsD(resp_code int, counter_chan chan Counter, envs []string) {
 							if ok {
 								counter += int(count)
 							}
+							// _, ok := point[1].(float64)
+							// if ok {
+							// ni := int(n)
+							// ns := strconv.Itoa(ni)
+							// i, err := strconv.ParseInt(ns, 10, 64)
+							// if err != nil {
+							// 	panic(err)
+							// }
+							// tm := time.Unix(i, 0)
+							// fmt.Println(tm)
+							// }
 						}
 					}
 				}
@@ -178,4 +191,5 @@ func curlStatsD(resp_code int, counter_chan chan Counter, envs []string) {
 		}
 	}
 	counter_chan <- Counter{resp_code, env_count, time.Since(start).Seconds()}
+	// resp.Body.Close()
 }
