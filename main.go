@@ -93,48 +93,49 @@ func Looper() {
 	for _, code := range codes {
 		go curlStatsD(code, counter, env)
 	}
-	// rgb = "green"
+	rgb = "green"
 	lcd_message = ""
 	m := make(map[int]string)
 
 	for range codes {
 		counter_back := <-counter
+		// codes[i] and counter_back.ResponseCode may not match
 		fmt.Printf("%.2fs: %v - %v\n", counter_back.RespTime, counter_back.ResponseCode, counter_back.Count)
 		if counter_back.ResponseCode == 200 {
 			m[200] = strconv.Itoa(counter_back.Count)
-			if int(counter_back.Count) > 0 {
-				rgb = "green"
-			}
+			// if int(counter_back.Count) > 0 {
+			// 	rgb = "green"
+			// }
 		}
 		if counter_back.ResponseCode == 400 {
 			m[400] = strconv.Itoa(counter_back.Count)
-			if int(counter_back.Count) > 0 {
-				rgb = "amber"
-			}
+			// if int(counter_back.Count) > 0 {
+			// 	rgb = "amber"
+			// }
 		}
 		if counter_back.ResponseCode == 401 {
 			m[401] = strconv.Itoa(counter_back.Count)
-			if int(counter_back.Count) > 0 {
-				rgb = "amber"
-			}
+			// if int(counter_back.Count) > 0 {
+			// 	rgb = "amber"
+			// }
 		}
 		if counter_back.ResponseCode == 404 {
 			m[404] = strconv.Itoa(counter_back.Count)
-			if int(counter_back.Count) > 0 {
-				rgb = "amber"
-			}
+			// if int(counter_back.Count) > 0 {
+			// 	rgb = "amber"
+			// }
 		}
 		if counter_back.ResponseCode == 503 {
 			m[503] = strconv.Itoa(counter_back.Count)
-			if int(counter_back.Count) > 0 {
-				rgb = "amber"
-			}
+			// if int(counter_back.Count) > 0 {
+			// 	rgb = "amber"
+			// }
 		}
 		if counter_back.ResponseCode == 500 {
 			m[500] = strconv.Itoa(counter_back.Count)
-			if int(counter_back.Count) > 0 {
-				rgb = "red"
-			}
+			// if int(counter_back.Count) > 0 {
+			// 	rgb = "red"
+			// }
 		}
 	}
 	var keys []int
@@ -142,6 +143,17 @@ func Looper() {
 		keys = append(keys, k)
 	}
 	sort.Ints(keys)
+	m503, _ := strconv.Atoi(m[503])
+	m404, _ := strconv.Atoi(m[404])
+	m401, _ := strconv.Atoi(m[401])
+	m400, _ := strconv.Atoi(m[400])
+	m500, _ := strconv.Atoi(m[500])
+	if m503 > 0 || m404 > 0 || m401 > 0 || m400 > 0 {
+		rgb = "amber"
+	}
+	if m500 > 0 {
+		rgb = "red"
+	}
 	for _, k := range keys {
 		lcd_message += strconv.Itoa(k) + ":" + m[k] + " "
 	}
