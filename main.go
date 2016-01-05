@@ -43,16 +43,18 @@ func main() {
 					fmt.Println("Loading...")
 					screen.Write("Loading...")
 				} else if lcd_message != "" {
-					s := lcd_message[0:len(lcd_message)/2] + "\n" + lcd_message[len(lcd_message)/2:len(lcd_message)]
+					s := lcd_message[0:16] + "\n" + lcd_message[16:len(lcd_message)]
 					fmt.Println(s)
 					screen.Write(s)
 				}
+				if rgb == "green" {
+					screen.SetRGB(0, 255, 0)
+				}
+				if rgb == "amber" {
+					screen.SetRGB(255, 102, 0)
+				}
 				if rgb == "red" {
 					screen.SetRGB(255, 0, 0)
-				} else if rgb == "amber" {
-					screen.SetRGB(255, 102, 0)
-				} else {
-					screen.SetRGB(0, 255, 0)
 				}
 			}
 			robot := gobot.NewRobot("screenBot",
@@ -85,13 +87,13 @@ func SetViper() bool {
 func Looper() {
 
 	start := time.Now()
-	codes := []int{200, 401, 404, 500, 503}
+	codes := []int{200, 400, 401, 404, 500, 503}
 	env := []string{"prod1", "prod2"}
 	counter := make(chan Counter)
 	for _, code := range codes {
 		go curlStatsD(code, counter, env)
 	}
-	rgb = "green"
+	// rgb = "green"
 	lcd_message = ""
 	m := make(map[int]string)
 
@@ -100,25 +102,38 @@ func Looper() {
 		fmt.Printf("%.2fs: %v - %v\n", counter_back.RespTime, counter_back.ResponseCode, counter_back.Count)
 		if counter_back.ResponseCode == 200 {
 			m[200] = strconv.Itoa(counter_back.Count)
-		} else if counter_back.ResponseCode == 500 {
-			m[500] = strconv.Itoa(counter_back.Count)
 			if int(counter_back.Count) > 0 {
-				rgb = "red"
+				rgb = "green"
 			}
-		} else if counter_back.ResponseCode == 401 {
+		}
+		if counter_back.ResponseCode == 400 {
+			m[400] = strconv.Itoa(counter_back.Count)
+			if int(counter_back.Count) > 0 {
+				rgb = "amber"
+			}
+		}
+		if counter_back.ResponseCode == 401 {
 			m[401] = strconv.Itoa(counter_back.Count)
 			if int(counter_back.Count) > 0 {
 				rgb = "amber"
 			}
-		} else if counter_back.ResponseCode == 404 {
+		}
+		if counter_back.ResponseCode == 404 {
 			m[404] = strconv.Itoa(counter_back.Count)
 			if int(counter_back.Count) > 0 {
 				rgb = "amber"
 			}
-		} else if counter_back.ResponseCode == 503 {
+		}
+		if counter_back.ResponseCode == 503 {
 			m[503] = strconv.Itoa(counter_back.Count)
 			if int(counter_back.Count) > 0 {
 				rgb = "amber"
+			}
+		}
+		if counter_back.ResponseCode == 500 {
+			m[500] = strconv.Itoa(counter_back.Count)
+			if int(counter_back.Count) > 0 {
+				rgb = "red"
 			}
 		}
 	}
@@ -172,17 +187,6 @@ func curlStatsD(resp_code int, counter_chan chan Counter, envs []string) {
 							if ok {
 								counter += int(count)
 							}
-							// _, ok := point[1].(float64)
-							// if ok {
-							// ni := int(n)
-							// ns := strconv.Itoa(ni)
-							// i, err := strconv.ParseInt(ns, 10, 64)
-							// if err != nil {
-							// 	panic(err)
-							// }
-							// tm := time.Unix(i, 0)
-							// fmt.Println(tm)
-							// }
 						}
 					}
 				}
@@ -191,5 +195,4 @@ func curlStatsD(resp_code int, counter_chan chan Counter, envs []string) {
 		}
 	}
 	counter_chan <- Counter{resp_code, env_count, time.Since(start).Seconds()}
-	// resp.Body.Close()
 }
