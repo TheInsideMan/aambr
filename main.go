@@ -37,8 +37,10 @@ func main() {
 		gbot := gobot.NewGobot()
 		board := raspi.NewRaspiAdaptor("raspi")
 		screen := i2c.NewGroveLcdDriver(board, "screen")
+		// rgb_tmp := ""
 		for {
 			work := func() {
+
 				if lcd_message == "" {
 					fmt.Println("Loading...")
 					screen.Write("Loading...")
@@ -47,6 +49,7 @@ func main() {
 					fmt.Println(s)
 					screen.Write(s)
 				}
+				// if rgb_tmp != rgb {
 				if rgb == "green" {
 					screen.SetRGB(0, 255, 0)
 				}
@@ -56,6 +59,9 @@ func main() {
 				if rgb == "red" {
 					screen.SetRGB(255, 0, 0)
 				}
+				// rgb_tmp = rgb
+				// }
+
 			}
 			robot := gobot.NewRobot("screenBot",
 				[]gobot.Connection{board},
@@ -99,50 +105,27 @@ func Looper() {
 
 	for range codes {
 		counter_back := <-counter
-		// codes[i] and counter_back.ResponseCode may not match
 		fmt.Printf("%.2fs: %v - %v\n", counter_back.RespTime, counter_back.ResponseCode, counter_back.Count)
 		if counter_back.ResponseCode == 200 {
 			m[200] = strconv.Itoa(counter_back.Count)
-			// if int(counter_back.Count) > 0 {
-			// 	rgb = "green"
-			// }
 		}
 		if counter_back.ResponseCode == 400 {
 			m[400] = strconv.Itoa(counter_back.Count)
-			// if int(counter_back.Count) > 0 {
-			// 	rgb = "amber"
-			// }
 		}
 		if counter_back.ResponseCode == 401 {
 			m[401] = strconv.Itoa(counter_back.Count)
-			// if int(counter_back.Count) > 0 {
-			// 	rgb = "amber"
-			// }
 		}
 		if counter_back.ResponseCode == 404 {
 			m[404] = strconv.Itoa(counter_back.Count)
-			// if int(counter_back.Count) > 0 {
-			// 	rgb = "amber"
-			// }
 		}
 		if counter_back.ResponseCode == 503 {
 			m[503] = strconv.Itoa(counter_back.Count)
-			// if int(counter_back.Count) > 0 {
-			// 	rgb = "amber"
-			// }
 		}
 		if counter_back.ResponseCode == 500 {
 			m[500] = strconv.Itoa(counter_back.Count)
-			// if int(counter_back.Count) > 0 {
-			// 	rgb = "red"
-			// }
 		}
 	}
-	var keys []int
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
+
 	m503, _ := strconv.Atoi(m[503])
 	m404, _ := strconv.Atoi(m[404])
 	m401, _ := strconv.Atoi(m[401])
@@ -154,6 +137,12 @@ func Looper() {
 	if m500 > 0 {
 		rgb = "red"
 	}
+
+	var keys []int
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
 	for _, k := range keys {
 		lcd_message += strconv.Itoa(k) + ":" + m[k] + " "
 	}
