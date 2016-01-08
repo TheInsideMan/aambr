@@ -93,7 +93,7 @@ func SetViper() bool {
 func Looper() {
 
 	start := time.Now()
-	codes := []int{200, 400, 401, 404, 500, 503}
+	codes := []int{200, 400, 404, 500}
 	env := []string{"prod1", "prod2"}
 	counter := make(chan Counter)
 	for _, code := range codes {
