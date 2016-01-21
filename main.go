@@ -71,7 +71,7 @@ func main() {
 			gbot.AddRobot(robot)
 			robot.Start()
 			Looper()
-			time.Sleep(10 * time.Second)
+			time.Sleep(30 * time.Second)
 		}
 	}
 }
